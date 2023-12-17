@@ -181,6 +181,36 @@ exports.updateProduct = catchAsync(async (req, res, next) => {
     return next(new AppError('Produto não encontrado!', 404));
   }
 
+  // Parse price to double value
+  if (data.price) {
+    data.price = parseFloat(data.price);
+  }
+
+  // Parse actual stock to int value
+  if (data.actual_stock) {
+    data.actual_stock = parseInt(data.actual_stock);
+  }
+
+  // Check if name is valid
+  if (data.name && (data.name.length < 3 || data.name.length > 30)) {
+    return next(new AppError('Nome inválido! O nome deve ter entre 3 e 30 caracteres!', 403));
+  }
+
+  // Check if description is valid
+  if (data.description && (data.description.length < 3 || data.description.length > 500)) {
+    return next(new AppError('Descrição inválida! A descrição deve ter entre 3 e 500 caracteres!', 403));
+  }
+
+  // Check if price is valid
+  if (data.price && (data.price < 0.01 || data.price > 9999.99)) {
+    return next(new AppError('Preço inválido! O preço deve estar entre 0.01 e 9999.99!', 403));
+  }
+
+  // Check if stock is valid
+  if (data.actual_stock && (data.actual_stock < 1 || data.actual_stock > 9999)) {
+    return next(new AppError('Stock inválido! O stock deve estar entre 1 e 9999!', 403));
+  }
+
   // Update product
   const { query, values } = updateProduct(Object.entries(data), id_product);
 
