@@ -1,0 +1,24 @@
+<resources>
+    <string name="app_name">Volley-Example</string>
+    <string name="action_settings">Settings</string>
+    <!-- Strings used for fragments for navigation -->
+    <string name="first_fragment_label">First Fragment</string>
+    <string name="second_fragment_label">Second Fragment</string>
+    <string name="next">Next</string>
+    <string name="previous">Previous</string>
+
+    <!-- Strings used for the details modal -->
+    <string name="inputName">Name</string>
+    <string name="inputDescription">Description</string>
+    <string name="inputPrice">Price</string>
+    <string name="inputStock">Stock</string>
+    <string name="postButton">Inserir</string>
+    <string name="updateButton">Atualizar</string>
+    <string name="backButton">Voltar</string>
+
+    <!-- Error strings-->
+    <string name="emptyNameError">Nome vazio!</string>
+    <string name="emptyDescriptionError">Descrição vazia!</string>
+    <string name="emptyPriceError">Preço vazio!</string>
+    <string name="emptyStockError">Stock vazio!</string>
+</resources>
