@@ -4,6 +4,7 @@
     style="@style/modalStyle">
 
     <ScrollView
+        android:id="@+id/modalContent"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:clipToPadding="false"
@@ -103,5 +104,27 @@
         </LinearLayout>
 
     </ScrollView>
+
+    <LinearLayout
+        android:id="@+id/modalLoading"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:visibility="gone">
+        <ProgressBar
+            android:id="@+id/progressBarModal"
+            android:layout_width="@dimen/_55sdp"
+            android:layout_height="@dimen/_55sdp"/>
+
+        <TextView
+            android:id="@+id/txtModalMessage"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/loading"
+            android:textSize="@dimen/_17ssp"
+            android:layout_marginTop="@dimen/_10sdp"/>
+    </LinearLayout>
 
 </RelativeLayout>

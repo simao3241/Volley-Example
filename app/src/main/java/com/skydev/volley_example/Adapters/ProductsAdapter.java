@@ -13,7 +13,7 @@ import com.skydev.volley_example.databinding.ProductListItemBinding;
 
 import java.util.List;
 
-public class ProductsAdapter extends RecyclerView.Adapter<ProductsAdapter.TodosViewHolder>{
+public class ProductsAdapter extends RecyclerView.Adapter<ProductsAdapter.ProductsViewHolder>{
     private List<Product> productList;
     private final ProductsListener productsListener;
 
@@ -24,7 +24,7 @@ public class ProductsAdapter extends RecyclerView.Adapter<ProductsAdapter.TodosV
 
     @NonNull
     @Override
-    public ProductsAdapter.TodosViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+    public ProductsAdapter.ProductsViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
 
         ProductListItemBinding productListItemBinding = ProductListItemBinding.inflate(
                 LayoutInflater.from(parent.getContext()),
@@ -32,13 +32,21 @@ public class ProductsAdapter extends RecyclerView.Adapter<ProductsAdapter.TodosV
                 false
         );
 
-        return new ProductsAdapter.TodosViewHolder(productListItemBinding);
+        return new ProductsAdapter.ProductsViewHolder(productListItemBinding);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull ProductsAdapter.TodosViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull ProductsAdapter.ProductsViewHolder holder, int position) {
 
         holder.setTodoData(productList.get(position));
+    }
+
+    public void onDelete(@NonNull RecyclerView.ViewHolder holder, int position) {
+        ((ProductsViewHolder) holder).deleteEvent(productList.get(position));
+    }
+
+    public void onEdit(@NonNull RecyclerView.ViewHolder holder, int position) {
+        ((ProductsViewHolder) holder).editEvent(productList.get(position));
     }
 
     @Override
@@ -46,20 +54,27 @@ public class ProductsAdapter extends RecyclerView.Adapter<ProductsAdapter.TodosV
         return productList.size();
     }
 
-    public class TodosViewHolder extends RecyclerView.ViewHolder{
+    public class ProductsViewHolder extends RecyclerView.ViewHolder{
 
         private ProductListItemBinding binding;
 
-        public TodosViewHolder(ProductListItemBinding productListItemBinding) {
+        public ProductsViewHolder(ProductListItemBinding productListItemBinding) {
             super(productListItemBinding.getRoot());
             binding = productListItemBinding;
         }
 
-        void setTodoData(Product product){
+        void setTodoData(Product product) {
             binding.productName.setText(product.name);
             binding.productCheckBox.setChecked(product.enabled);
-            binding.productCheckBox.setOnClickListener(v -> productsListener.onChangeStatus(product, binding));
-            binding.getRoot().setOnClickListener(v -> productsListener.onViewDetails(product.id_product));
+            binding.productCheckBox.setOnClickListener(v -> product.enabled = productsListener.onChangeStatus(product, binding));
+            binding.getRoot().setOnClickListener(v -> productsListener.onViewDetails(product.id_product, binding));
+        }
+
+        public void deleteEvent(Product product) {
+            productsListener.onProductDelete(product);
+        }
+        public void editEvent(Product product) {
+            productsListener.onProductEdit(product);
         }
     }
 }

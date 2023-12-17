@@ -15,10 +15,15 @@
     <string name="postButton">Inserir</string>
     <string name="updateButton">Atualizar</string>
     <string name="backButton">Voltar</string>
+    <string name="loading">A carregar a informação...</string>
 
     <!-- Error strings-->
     <string name="emptyNameError">Nome vazio!</string>
     <string name="emptyDescriptionError">Descrição vazia!</string>
     <string name="emptyPriceError">Preço vazio!</string>
     <string name="emptyStockError">Stock vazio!</string>
+
+    <!-- Swipe strings-->
+    <string name="editButton">Editar</string>
+    <string name="deleteButton">Apagar</string>
 </resources>

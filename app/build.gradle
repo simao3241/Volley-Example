@@ -52,4 +52,7 @@ dependencies {
 
     //GSON
     implementation 'com.google.code.gson:gson:2.10'
+
+    //RecyclerView Swipe Decorator
+    implementation 'com.github.xabaras:RecyclerViewSwipeDecorator:1.3'
 }

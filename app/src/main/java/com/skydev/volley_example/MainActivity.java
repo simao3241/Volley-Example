@@ -8,6 +8,7 @@ import android.view.ViewGroup;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.android.volley.Request;
@@ -21,6 +22,7 @@ import com.skydev.volley_example.Listeners.ProductsListener;
 import com.skydev.volley_example.Models.Product;
 import com.skydev.volley_example.Singletons.BaseSingleton;
 import com.skydev.volley_example.Util.Constants;
+import com.skydev.volley_example.Util.SwipeItem;
 import com.skydev.volley_example.databinding.ActivityMainBinding;
 import com.skydev.volley_example.databinding.DetailsModalBinding;
 import com.skydev.volley_example.databinding.ProductListItemBinding;
@@ -35,6 +37,10 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity implements ProductsListener {
     //Declare variables
     private ActivityMainBinding binding;
+
+    ProductsAdapter productsAdapter;
+    SwipeItem swipeItem;
+    ItemTouchHelper itemTouchHelper;
 
     RequestQueue queue;
 
@@ -82,7 +88,7 @@ public class MainActivity extends AppCompatActivity implements ProductsListener 
                     } catch (JSONException e) {
                         throw new RuntimeException(e);
                     }
-                    List<Product> products = convertData(productsJSON);
+                    List<Product> products = (List<Product>) convertData(productsJSON, true);
                     if (products != null) {
                         if (products.size() > 0) {
                             loading(false, false);
@@ -136,7 +142,7 @@ public class MainActivity extends AppCompatActivity implements ProductsListener 
 
     //Change Status
     @Override
-    public void onChangeStatus(Product product, ProductListItemBinding view) {
+    public boolean onChangeStatus(Product product, ProductListItemBinding view) {
         //Update the product
         view.productCheckBox.setVisibility(View.GONE);
         view.productProgressBar.setVisibility(View.VISIBLE);
@@ -160,12 +166,109 @@ public class MainActivity extends AppCompatActivity implements ProductsListener 
 
         // Add the request to the RequestQueue.
         BaseSingleton.getInstance(this).addToRequestQueue(objectRequest);
+
+        return !product.enabled;
     }
 
     //View Details
     @Override
-    public void onViewDetails(int id_product) {
-        makeToast("View Details");
+    public void onViewDetails(int id_product, ProductListItemBinding view) {
+        showDetailModal(id_product, view);
+    }
+
+    //Delete Product
+    @Override
+    public void onProductDelete(Product product) {
+        loading(true);
+        //Delete the product
+        JsonObjectRequest objectRequest =
+                new JsonObjectRequest(Request.Method.DELETE,
+                        Constants.BASE_URL + "/" + product.id_product,
+                        null,
+                        response -> {
+//                            makeToast("Deleted");
+                            getAll();
+                        }, error -> {
+//                            makeToast("Error: " + error);
+                        }
+                );
+
+        //Set the tag
+        objectRequest.setTag(Constants.TAG);
+
+        // Add the request to the RequestQueue.
+        BaseSingleton.getInstance(this).addToRequestQueue(objectRequest);
+    }
+
+    //Edit Product
+    @Override
+    public void onProductEdit(Product product) {
+        showPutModal(product);
+    }
+
+    // Show Detail Modal
+    private void showDetailModal(int id_product, ProductListItemBinding view){
+        DetailsModalBinding detailsModalBinding = DetailsModalBinding.inflate(getLayoutInflater(), null, false);
+        final Dialog customDialog = new Dialog(this);
+        customDialog.setContentView(detailsModalBinding.getRoot());
+        customDialog.getWindow().setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+
+        //Set input disabled
+        detailsModalBinding.txtName.setEnabled(false);
+        detailsModalBinding.txtDescription.setEnabled(false);
+        detailsModalBinding.txtPrice.setEnabled(false);
+        detailsModalBinding.txtStock.setEnabled(false);
+
+        //Set loading
+        detailsModalBinding.modalLoading.setVisibility(View.VISIBLE);
+        detailsModalBinding.modalContent.setVisibility(View.GONE);
+
+        //Set card view inactivated
+        view.getRoot().setActivated(false);
+
+        //Get values
+        // Request a string response from the provided URL.
+        StringRequest stringRequest = new StringRequest(Request.Method.GET, Constants.BASE_URL + "/" + id_product,
+                response -> {
+                    detailsModalBinding.modalLoading.setVisibility(View.GONE);
+                    detailsModalBinding.modalContent.setVisibility(View.VISIBLE);
+
+                    String productsJSON = null;
+                    try {
+                        JSONObject jsonObject = new JSONObject( response );
+                        productsJSON = jsonObject.getJSONObject("data").getJSONObject("product").toString();
+//                        Log.d("JSON", productsJSON);
+                    } catch (JSONException e) {
+                        throw new RuntimeException(e);
+                    }
+                    Product product = (Product) convertData(productsJSON, false);
+                    detailsModalBinding.txtName.setText(product.name);
+                    detailsModalBinding.txtDescription.setText(product.description);
+                    detailsModalBinding.txtPrice.setText(product.price);
+                    detailsModalBinding.txtStock.setText(product.actual_stock + "");
+                }, error -> {
+                    detailsModalBinding.modalLoading.setVisibility(View.GONE);
+                    detailsModalBinding.modalContent.setVisibility(View.VISIBLE);
+                    detailsModalBinding.txtName.setText("API Disconnected");
+                });
+
+        //Set the tag
+        stringRequest.setTag(Constants.TAG);
+
+        // Add the request to the RequestQueue.
+        BaseSingleton.getInstance(this).addToRequestQueue(stringRequest);
+
+        //Set listeners
+        detailsModalBinding.btnAction.setVisibility(View.GONE);
+        detailsModalBinding.btnBack.setOnClickListener(v -> {
+            customDialog.dismiss();
+            view.getRoot().setActivated(true);
+        });
+
+        customDialog.setCancelable(true);
+        customDialog.setCanceledOnTouchOutside(false);
+
+        customDialog.show();
     }
 
     // Show Post Modal
@@ -177,6 +280,7 @@ public class MainActivity extends AppCompatActivity implements ProductsListener 
 
         //Set listeners
         detailsModalBinding.btnAction.setOnClickListener(v -> actionProduct(customDialog, detailsModalBinding, true, null));
+        detailsModalBinding.btnBack.setOnClickListener(v -> customDialog.dismiss());
 
         customDialog.setCancelable(true);
         customDialog.setCanceledOnTouchOutside(false);
@@ -195,10 +299,14 @@ public class MainActivity extends AppCompatActivity implements ProductsListener 
         detailsModalBinding.txtName.setText(product.name);
         detailsModalBinding.txtDescription.setText(product.description);
         detailsModalBinding.txtPrice.setText(product.price.replace("$", ""));
-        detailsModalBinding.txtStock.setText(product.actual_stock);
+        detailsModalBinding.txtStock.setText(product.actual_stock + "");
+
+        //Set button text
+        detailsModalBinding.btnAction.setText(getString(R.string.updateButton));
 
         //Set listeners
         detailsModalBinding.btnAction.setOnClickListener(v -> actionProduct(customDialog, detailsModalBinding, false, product));
+        detailsModalBinding.btnBack.setOnClickListener(v -> customDialog.dismiss());
 
         customDialog.setCancelable(true);
         customDialog.setCanceledOnTouchOutside(false);
@@ -308,6 +416,11 @@ public class MainActivity extends AppCompatActivity implements ProductsListener 
                                 detailsModalBinding.btnBack.setVisibility(View.VISIBLE);
                             }
                     );
+            //Set the tag
+            objectRequest.setTag(Constants.TAG);
+
+            // Add the request to the RequestQueue.
+            BaseSingleton.getInstance(this).addToRequestQueue(objectRequest);
         }
     }
 
@@ -336,10 +449,17 @@ public class MainActivity extends AppCompatActivity implements ProductsListener 
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
     }
 
-    private List<Product> convertData(String response) {
+    private Object convertData(String response, boolean isList) {
         Gson gson = new Gson();
-        Type listType = new TypeToken<List<Product>>(){}.getType();
-        return gson.fromJson(response, listType);
+        Type type;
+        if (!isList) {
+            type = new TypeToken<Product>() {
+            }.getType();
+        } else {
+            type = new TypeToken<List<Product>>() {
+            }.getType();
+        }
+        return gson.fromJson(response, type);
     }
 
     private String decodeError(com.android.volley.VolleyError error) throws JSONException, UnsupportedEncodingException {
@@ -401,6 +521,23 @@ public class MainActivity extends AppCompatActivity implements ProductsListener 
         binding.recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
         // set adapter
-        binding.recyclerView.setAdapter(new ProductsAdapter(productList, this));
+        productsAdapter = new ProductsAdapter(productList, this);
+        binding.recyclerView.setAdapter(productsAdapter);
+        //Reset swipe item
+        swipeItem = null;
+
+        //Set swipe item
+        setSwipeItem();
+    }
+
+    private void setSwipeItem(){
+        if (itemTouchHelper != null)
+            itemTouchHelper.attachToRecyclerView(null);
+        binding.recyclerView.clearOnChildAttachStateChangeListeners();
+
+        if (swipeItem == null)
+            swipeItem = new SwipeItem(productsAdapter, getApplicationContext());
+        itemTouchHelper = new ItemTouchHelper(swipeItem);
+        itemTouchHelper.attachToRecyclerView(binding.recyclerView);
     }
 }
