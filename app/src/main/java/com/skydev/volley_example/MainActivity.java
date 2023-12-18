@@ -269,6 +269,12 @@ public class MainActivity extends AppCompatActivity implements ProductsListener 
         customDialog.setCanceledOnTouchOutside(false);
 
         customDialog.show();
+
+        //Reset swipe item
+        swipeItem = null;
+
+        //Set swipe item
+        setSwipeItem();
     }
 
     // Show Post Modal
@@ -286,6 +292,12 @@ public class MainActivity extends AppCompatActivity implements ProductsListener 
         customDialog.setCanceledOnTouchOutside(false);
 
         customDialog.show();
+
+        //Reset swipe item
+        swipeItem = null;
+
+        //Set swipe item
+        setSwipeItem();
     }
 
     // Show Put Modal
@@ -312,6 +324,12 @@ public class MainActivity extends AppCompatActivity implements ProductsListener 
         customDialog.setCanceledOnTouchOutside(false);
 
         customDialog.show();
+
+        //Reset swipe item
+        swipeItem = null;
+
+        //Set swipe item
+        setSwipeItem();
     }
 
     //action product
