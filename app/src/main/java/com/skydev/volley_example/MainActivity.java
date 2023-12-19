@@ -101,8 +101,8 @@ public class MainActivity extends AppCompatActivity implements ProductsListener 
                     }
                 }, error -> {
                     try {
-                        String responseMessage = decodeError(error);
-                        if (error.networkResponse.statusCode == 404) {
+                        if (error.networkResponse != null && error.networkResponse.statusCode == 404) {
+                            String responseMessage = decodeError(error);
                             Log.e("APIError", "Error: ");
                             loading(false,
                                     true,
@@ -190,6 +190,7 @@ public class MainActivity extends AppCompatActivity implements ProductsListener 
                             getAll();
                         }, error -> {
 //                            makeToast("Error: " + error);
+                            getAll();
                         }
                 );
 
@@ -390,7 +391,8 @@ public class MainActivity extends AppCompatActivity implements ProductsListener 
                                 getAll();
                             }, error -> {
                                 try {
-                                    makeToast(decodeError(error));
+                                    if (error.networkResponse != null && error.networkResponse.statusCode == 404)
+                                        makeToast(decodeError(error));
                                 } catch (JSONException e) {
                                     throw new RuntimeException(e);
                                 } catch (UnsupportedEncodingException e) {
@@ -423,7 +425,8 @@ public class MainActivity extends AppCompatActivity implements ProductsListener 
                                 getAll();
                             }, error -> {
                                 try {
-                                    makeToast(decodeError(error));
+                                    if (error.networkResponse != null && error.networkResponse.statusCode == 404)
+                                        makeToast(decodeError(error));
                                 } catch (JSONException e) {
                                     throw new RuntimeException(e);
                                 } catch (UnsupportedEncodingException e) {
